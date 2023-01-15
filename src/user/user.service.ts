@@ -8,6 +8,7 @@ import { sign } from 'jsonwebtoken'
 import { UserResponseInterface } from "./types/userResponse.interface";
 import { LoginDto } from "./dto/login.dto";
 import { compare } from 'bcrypt'
+import { UpdateUserDto } from "./dto/updateUserDto.dto";
 
 @Injectable()
 export class UserService {
@@ -47,6 +48,15 @@ export class UserService {
         return userByEmail
     }
 
+    async findById(id: number): Promise<UserEntity> {
+        return this.userRepositry.findOneBy({ id })
+    }
+
+    async updateUser(id: number, updateUserDto: UpdateUserDto): Promise<UserEntity> {
+        const userToUpdate = await this.findById(id)
+        const updatedUser = this.userRepositry.merge(userToUpdate, updateUserDto)
+        return await this.userRepositry.save(updatedUser)
+    }
 
 
     private generateJwt(user: UserEntity): string {
