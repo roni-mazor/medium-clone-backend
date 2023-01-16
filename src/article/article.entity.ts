@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, BeforeInsert, BeforeUpdate } from 'typeorm'
+import { UserEntity } from 'src/user/user.entity'
+import { Entity, Column, PrimaryGeneratedColumn, BeforeInsert, BeforeUpdate, ManyToOne } from 'typeorm'
 
 
 @Entity({ name: 'articles' })
@@ -34,5 +35,12 @@ export class ArticleEntity {
     updateTimestamp() {
         this.updatedAt = new Date()
     }
+
+    //same as in users just the other way around.
+    // when we save author as an entity,typeOrm knows it is a realtion and not a column of data,
+    // and it knows to treat .author just like storing an object in mongodb allthough it is managed as SQL
+    // works connected.
+    @ManyToOne(() => UserEntity, (user) => user.articles)
+    author: UserEntity
 
 }
