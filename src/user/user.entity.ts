@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, BeforeInsert } from 'typeorm'
-import {  hash } from 'bcrypt'
+import { hash } from 'bcrypt'
 
 
 @Entity({ name: 'users' })

@@ -9,5 +9,13 @@
 // this is the connection and activation of the typeorm cli tool,
 // schema:drop is a builtin command of typeorm that clears the current db we are connected to,
 // migration:generate (path/filename) used to be wrote with -n for indicating name, creates a new migration,
-// which is a subject i am now fully knoledgeable at yet,
+// when creating a new migration i need to only set the path to where i want the migration to be inserted at,and with it's name.
+// which is a subject i am not fully knoledgeable at yet,
 // db:migrate exectues all the migrations that we have made.
+
+
+// when using postgres cli 
+// in the folder insert command psql database username or (just postgres postgres to enter as postgres to all databases)
+// asked of password
+// then \dt to display tables, \d <TABLE_NAME> to display a specific table's definition \c to connect to a database
+// and regular SQL queries with ;
