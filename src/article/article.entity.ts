@@ -40,7 +40,7 @@ export class ArticleEntity {
     // when we save author as an entity,typeOrm knows it is a realtion and not a column of data,
     // and it knows to treat .author just like storing an object in mongodb allthough it is managed as SQL
     // works connected.
-    @ManyToOne(() => UserEntity, (user) => user.articles)
+    @ManyToOne(() => UserEntity, (user) => user.articles, { eager: true })
     author: UserEntity
 
 }

@@ -19,3 +19,8 @@
 // asked of password
 // then \dt to display tables, \d <TABLE_NAME> to display a specific table's definition \c to connect to a database
 // and regular SQL queries with ;
+
+
+
+// process of thought when creating a service function, think of all possible bad outcomes,the one that i need to throw an exception upon,
+// and only then provide the neccesary information/action.
