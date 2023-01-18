@@ -25,10 +25,9 @@ export class UserService {
         const userByUsername = await this.userRepositry.findOne({
             where: { username: createUserDto.username }
         })
-        console.log(userByUsername)
         if (userByUsername) throw new HttpException('Username allready exsists', HttpStatus.UNPROCESSABLE_ENTITY)
         if (userByEmail) throw new HttpException('Email allready exsists', HttpStatus.UNPROCESSABLE_ENTITY)
-
+        createUserDto.username = createUserDto.username.trim()
         const newUser = new UserEntity()
         Object.assign(newUser, createUserDto)
         return await this.userRepositry.save(newUser)
