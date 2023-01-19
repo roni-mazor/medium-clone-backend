@@ -19,7 +19,6 @@ export class ArticleController {
         @User('id') currentUserId: number,
         @Query() query: GetArticlesQueryParams
     ): Promise<ArticlesResponseInterface> {
-        console.log(currentUserId, query)
         return await this.articleService.findAll(currentUserId, query)
     }
 

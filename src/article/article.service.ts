@@ -39,12 +39,24 @@ export class ArticleService {
         await this.createFilterBy(queryBuilder, query)
 
         const articles = await queryBuilder.getMany()
-        return { articles, articlesCount }
+        let favoriteArticlesIds: number[] = []
+        if (currentUserId) {
+            const user = await this.userRepositry.findOne({
+                where: { id: currentUserId },
+                relations: ['favorites']
+            })
+            favoriteArticlesIds = user.favorites.map(article => article.id)
+        }
+        const favoritedArticles = articles.map((article) => {
+            const favorited = favoriteArticlesIds.includes(article.id)
+            return { ...article, favorited }
+        })
+        return { articles: favoritedArticles, articlesCount }
     }
 
     private async createFilterBy(
         queryBuilder: SelectQueryBuilder<ArticleEntity>,
-        query: GetArticlesQueryParams
+        query: GetArticlesQueryParams,
     ): Promise<void> {
         if (query.tag) {
             queryBuilder.andWhere('articles.tagList LIKE :tag', { tag: `%${query.tag}%` })
@@ -54,6 +66,20 @@ export class ArticleService {
             const author = await this.userRepositry.findOneBy({ username: query.author })
 
             queryBuilder.andWhere('articles.authorId = :id', { id: author.id })
+        }
+
+        if (query.favorited) {
+            const user = await this.userRepositry.findOne({
+                where: { username: query.favorited },
+                relations: ['favorites']
+            })
+            if (user && user.favorites.length > 0) {
+                const favArticlesIds = user.favorites.map(article => article.id)
+                queryBuilder.andWhere('articles.id IN (:...favArticlesIds)', { favArticlesIds })
+            } else {
+                queryBuilder.andWhere('1=0')
+            }
+
         }
 
         if (query.limit) queryBuilder.limit(query.limit)//how many
@@ -135,7 +161,6 @@ export class ArticleService {
 
         user.favorites = user.favorites.filter(({ id }) => id !== article.id)
         article.favoritesCount--
-        if (article.favoritesCount < 0) article.favoritesCount = 0
         await this.articleRepository.save(article)
         await this.userRepositry.save(user)
         return article
