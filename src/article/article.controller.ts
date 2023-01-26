@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Post, UseGuards, Param, Delete, UsePipes, ValidationPipe, Put, Query } from '@nestjs/common';
+import { BackendValidationPipe } from 'src/shared/pipes/backendValidatoin.pipe';
 import { User } from 'src/user/decorators/user.decorator';
 import { AuthGuard } from 'src/user/guards/auth.guard';
 import { UserEntity } from 'src/user/user.entity';
@@ -22,6 +23,17 @@ export class ArticleController {
         return await this.articleService.findAll(currentUserId, query)
     }
 
+
+    @Get('feed')
+    @UsePipes(new BackendValidationPipe())
+    @UseGuards(AuthGuard)
+    async GetUserFeed(
+        @User('id') currentUserId: number,
+        @Query() query: any
+    ): Promise<ArticlesResponseInterface> {
+        return await this.articleService.getUserFeed(currentUserId, query)
+    }
+
     @Get('/:slug')
     async findArticleBySlug(@Param('slug') slug: string) {
         const article = await this.articleService.findArticleBySlug(slug)
@@ -29,6 +41,7 @@ export class ArticleController {
     }
 
     @Delete('/:slug')
+    @UsePipes(new BackendValidationPipe())
     @UseGuards(AuthGuard)
     async removeArticle(@Param('slug') slug: string, @User('id') currentUserId: number): Promise<DeleteResult> {
         return await this.articleService.removeArticle(slug, currentUserId)
@@ -37,7 +50,7 @@ export class ArticleController {
 
 
     @Post()
-    @UsePipes(new ValidationPipe())
+    @UsePipes(new BackendValidationPipe())
     @UseGuards(AuthGuard)
     async createArticle(
         @User() currentUser: UserEntity,
@@ -49,7 +62,7 @@ export class ArticleController {
 
 
     @Put('/:slug')
-    @UsePipes(new ValidationPipe())
+    @UsePipes(new BackendValidationPipe())
     @UseGuards(AuthGuard)
     async updateArticle(
         @User('id') currentUserId: number,
@@ -61,7 +74,7 @@ export class ArticleController {
     }
 
     @Post('/:slug/favorite')
-    @UsePipes(new ValidationPipe())
+    @UsePipes(new BackendValidationPipe())
     @UseGuards(AuthGuard)
     async addArticleToFavorites(
         @User('id') currentUserId: number,
@@ -72,7 +85,7 @@ export class ArticleController {
     }
 
     @Delete('/:slug/favorite')
-    @UsePipes(new ValidationPipe())
+    @UsePipes(new BackendValidationPipe())
     @UseGuards(AuthGuard)
     async removeArticleFromFavorites(
         @User('id') currentUserId: number,

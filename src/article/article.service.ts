@@ -8,6 +8,7 @@ import slugify from 'slugify';
 import { ArticleResponseInterface } from './types/articleResponse.interface';
 import { ArticlesResponseInterface } from './types/articlesResponseInterface,interface';
 import { GetArticlesQueryParams } from './types/getArticlesQueryParams.interface';
+import { FollowEntity } from 'src/profile/follow.entity';
 
 @Injectable()
 export class ArticleService {
@@ -16,7 +17,9 @@ export class ArticleService {
         private readonly articleRepository: Repository<ArticleEntity>,
         private readonly dataSource: DataSource,
         @InjectRepository(UserEntity)
-        private readonly userRepositry: Repository<UserEntity>
+        private readonly userRepositry: Repository<UserEntity>,
+        @InjectRepository(FollowEntity)
+        private readonly followRepositry: Repository<FollowEntity>
     ) { }
 
 
@@ -54,6 +57,33 @@ export class ArticleService {
         return { articles: favoritedArticles, articlesCount }
     }
 
+
+    async getUserFeed(currentUserId: number, query: any): Promise<ArticlesResponseInterface> {
+        const follows = await this.followRepositry.find({
+            where: { followerId: currentUserId }
+        })
+
+        if (!follows.length) return { articles: [], articlesCount: 0 }
+
+        const followingUserIds = follows.map(follow => follow.followingId)
+        const queryBuilder = this.dataSource
+            .getRepository(ArticleEntity)
+            .createQueryBuilder('articles')
+            .leftJoinAndSelect('articles.author', 'author')
+            .where('articles.authorId IN (:...followingUserIds)', { followingUserIds })
+            .orderBy('articles.createdAt', 'DESC');
+
+        const articlesCount = await queryBuilder.getCount()
+
+        if (query.limit) queryBuilder.limit(query.limit)//how many
+        if (query.offset) queryBuilder.offset(query.offset)//from where
+
+        const articles = await queryBuilder.getMany()
+
+        return { articles, articlesCount }
+    }
+
+    
     private async createFilterBy(
         queryBuilder: SelectQueryBuilder<ArticleEntity>,
         query: GetArticlesQueryParams,

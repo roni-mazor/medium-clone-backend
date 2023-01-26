@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Body, UsePipes, UseGuards, ValidationPipe, Req, Res, Next, Put } from '@nestjs/common'
 import { NextFunction, Request, Response } from 'express'
+import { BackendValidationPipe } from 'src/shared/pipes/backendValidatoin.pipe'
 import { ExpressRequest } from 'src/types/expressRequest.interface'
 import { User } from './decorators/user.decorator'
 import { CreateUserDto } from './dto/createUser.dto'
@@ -15,7 +16,7 @@ export class UserController {
     constructor(private readonly userService: UserService) { }
 
     @Post()
-    @UsePipes(new ValidationPipe())
+    @UsePipes(new BackendValidationPipe())
     async createUser(
         @Body('user') createUserDto: CreateUserDto
     ): Promise<UserResponseInterface> {
@@ -24,7 +25,7 @@ export class UserController {
     }
 
     @Post('login')
-    @UsePipes(new ValidationPipe())
+    @UsePipes(new BackendValidationPipe())
     async Login(
         @Body('user') loginDto: LoginDto
     ): Promise<UserResponseInterface> {
@@ -33,7 +34,7 @@ export class UserController {
     }
 
     @Put()
-    @UsePipes(new ValidationPipe()) // important to use this validation pipe or else the dto class wont take into affect
+    @UsePipes(new BackendValidationPipe()) // important to use this validation pipe or else the dto class wont take into affect
     @UseGuards(AuthGuard)
     async updateCurrentUser(
         @Body('user') updateUserDto: UpdateUserDto,

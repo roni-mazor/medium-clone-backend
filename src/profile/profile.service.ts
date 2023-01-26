@@ -19,7 +19,8 @@ export class ProfileService {
     async findByUsername(username: string, currentUserId: number): Promise<Profile> {
         const user = await this.userRepository.findOne({ where: { username }, })
         if (!user) throw new HttpException('Profile does not exist', HttpStatus.NOT_FOUND)
-        return { ...user, following: false }
+        const followRelation = await this.followRepository.findOne({ where: { followerId: currentUserId, followingId: user.id } })
+        return { ...user, following: !!followRelation }
     }
 
     async followProfile(usernameToFollow: string, currentUserId: number) {

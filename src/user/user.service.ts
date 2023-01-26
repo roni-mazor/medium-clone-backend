@@ -19,14 +19,16 @@ export class UserService {
     ) { }
 
     async createUser(createUserDto: CreateUserDto): Promise<UserEntity> {
+        const errorResponse = { errors: {} }
         const userByEmail = await this.userRepositry.findOne({
             where: { email: createUserDto.email }
         })
         const userByUsername = await this.userRepositry.findOne({
             where: { username: createUserDto.username }
         })
-        if (userByUsername) throw new HttpException('Username allready exsists', HttpStatus.UNPROCESSABLE_ENTITY)
-        if (userByEmail) throw new HttpException('Email allready exsists', HttpStatus.UNPROCESSABLE_ENTITY)
+        if (userByUsername) errorResponse['email'] = 'has already been taken'
+        if (userByEmail) errorResponse['email'] = 'has already been taken'
+        if (userByEmail || userByUsername) throw new HttpException(errorResponse, HttpStatus.UNPROCESSABLE_ENTITY)
         createUserDto.username = createUserDto.username.replace(' ', '')
         const newUser = new UserEntity()
         Object.assign(newUser, createUserDto)
@@ -34,15 +36,16 @@ export class UserService {
     }
 
     async login(loginDto: LoginDto): Promise<UserEntity> {
+        const errorResponse = { errors: { 'email or password': 'is invalid' } }
         const userByEmail = await this.userRepositry.findOne({
             where: { email: loginDto.email },
             select: ['id', 'username', 'email', 'password', 'image', 'bio']
         })
 
-        if (!userByEmail) throw new HttpException('Unsigned email', HttpStatus.NOT_FOUND)
+        if (!userByEmail) throw new HttpException(errorResponse, HttpStatus.NOT_FOUND)
 
         const isPasswordCorrect = await compare(loginDto.password, userByEmail.password)
-        if (!isPasswordCorrect) throw new HttpException('Inavlid Password', HttpStatus.NOT_ACCEPTABLE)
+        if (!isPasswordCorrect) throw new HttpException(errorResponse, HttpStatus.NOT_ACCEPTABLE)
         delete userByEmail.password
         return userByEmail
     }
